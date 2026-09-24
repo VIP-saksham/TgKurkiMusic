@@ -21,10 +21,12 @@
 
 
 import asyncio
+import time
 
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import (
     ChatAdminRequired,
+    FloodWait,
     InviteRequestSent,
     PeerIdInvalid,
     UserAlreadyParticipant,
@@ -48,6 +50,9 @@ from config import PLAYLIST_IMG_URL, SUPPORT_GROUP, adminlist
 from strings import get_string
 
 links = {}
+# Per-chat invite flow ka last attempt time — FloodWait spam rokne ke liye
+_invite_gate = {}
+_INVITE_COOLDOWN = 600  # 10 min
 
 
 def PlayWrapper(command):
@@ -147,6 +152,11 @@ def PlayWrapper(command):
                 except PeerIdInvalid:
                     # Assistant ka peer cache cold — invite flow se join karwao
                     raise UserNotParticipant() from None
+                except FloodWait as e:
+                    # Flood chal raha hai — assistant check skip karo, seedha play
+                    return await command(
+                        client, message, _, chat_id, video, channel, playmode, url, fplay,
+                    )
                 if (
                     get.status == ChatMemberStatus.BANNED
                     or get.status == ChatMemberStatus.RESTRICTED
@@ -157,6 +167,12 @@ def PlayWrapper(command):
                         )
                     )
             except UserNotParticipant:
+                # Recent fail pe dobara invite spam mat karo — FloodWait isi se banta hai
+                if time.time() < _invite_gate.get(chat_id, 0):
+                    return await command(
+                        client, message, _, chat_id, video, channel, playmode, url, fplay,
+                    )
+                _invite_gate[chat_id] = time.time() + _INVITE_COOLDOWN
                 if chat_id in links:
                     invitelink = links[chat_id]
                 else:
@@ -194,12 +210,18 @@ def PlayWrapper(command):
                     await asyncio.sleep(0.4)
                     await myu.edit(_["call_5"].format(app.mention))
                 except UserAlreadyParticipant:
-                    pass
+                    _invite_gate.pop(chat_id, None)  # join ho gaya — gate clear
+                except FloodWait as e:
+                    _invite_gate[chat_id] = time.time() + max(_INVITE_COOLDOWN, e.value + 60)
+                    return await message.reply_text(
+                        _["call_3"].format(app.mention, f"FloodWait {e.value}s")
+                    )
                 except Exception as e:
                     return await message.reply_text(
                         _["call_3"].format(app.mention, type(e).__name__)
                     )
 
+                _invite_gate.pop(chat_id, None)  # successful invite — gate clear
                 links[chat_id] = invitelink
 
                 try:
