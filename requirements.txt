@@ -1,0 +1,39 @@
+kurigram==2.2.26
+gTTS
+aiofiles
+aiohttp
+asyncio
+beautifulsoup4
+dnspython
+ffmpeg-python
+gitpython
+hachoir
+heroku3
+httpx
+motor
+numpy
+opencv-python
+pytz
+pillow>=10.0.0
+psutil
+py-tgcalls>=2.2.0
+ntgcalls>=2.2.0
+pykeyboard
+python-dotenv
+pyyaml
+requests
+speedtest-cli
+spotipy
+# Optional Pyrogram speedup; install when a compatible prebuilt wheel is available.
+# tgcrypto
+telegraph 
+unidecode
+youtube-search
+youtube-search-python
+py-yt-search
+yt-dlp
+# ===========================================
+# ©️ 2025 Nand Yaduwanshi , aka @NoxxOP
+# 🔗 GitHub : https://github.com/NoxxOP/ShrutiMusic
+# 📢 Telegram Channel : https://t.me/ShrutiBots
+# ===========================================
