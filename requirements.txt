@@ -14,7 +14,7 @@ motor
 numpy
 opencv-python
 pytz
-pillow>=10.0.0
+pillow>=12.3.0
 psutil
 py-tgcalls>=2.2.0
 ntgcalls>=2.2.0
